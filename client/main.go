@@ -12,9 +12,8 @@ import (
 )
 
 const (
-	SERVER_HOST = "localhost"
+	SERVER_HOST = "ws://localhost:"
 	SERVER_PORT = "9988"
-	SERVER_TYPE = "tcp"
 )
 
 func main() {
@@ -23,7 +22,7 @@ func main() {
 	clientName, _ := reader.ReadString('\n')
 	clientName = strings.TrimSpace(clientName)
 	origin := "http://localhost/" + clientName
-	url := "ws://localhost:9988"
+	url := SERVER_HOST + SERVER_PORT
 	ws, err := websocket.Dial(url, "", origin)
 	if err != nil {
 		log.Fatal(err)
@@ -38,11 +37,12 @@ func main() {
 				log.Println("Error reading from server:", err)
 				return
 			}
-			fmt.Printf("\nReceived: %s\n", msg[:n])
+			fmt.Print("\r\033[K") // Clear the line
+			fmt.Printf("%s\n", msg[:n])
+			fmt.Print("Text to send: ")
 		}
 	}()
 
-	// Main loop to handle user input
 	for {
 		fmt.Print("\nText to send: ")
 		text, _ := reader.ReadString('\n')

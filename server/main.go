@@ -44,14 +44,20 @@ func (s *Server) readLoop(ws *websocket.Conn) {
 			continue
 		}
 		msg := buf[:n]
-		s.broadcast(msg)
+		s.broadcast(ws, msg)
 	}
 }
 
-func (s *Server) broadcast(b []byte) {
+func (s *Server) broadcast(origin *websocket.Conn, b []byte) {
+	senderAddr := origin.RemoteAddr().String()
+	fullMsg := fmt.Sprintf("%s: %s", senderAddr, string(b))
+
 	for ws := range s.connections {
+		if ws == origin {
+			continue // Skip sending the message to the original sender
+		}
 		go func(ws *websocket.Conn) {
-			if _, err := ws.Write(b); err != nil {
+			if _, err := ws.Write([]byte(fullMsg)); err != nil {
 				fmt.Println("write error :: ", err)
 			}
 		}(ws)
